@@ -56,6 +56,8 @@ forward_mds <- function(high_d, k, weights, dist.func, n.inits, seed) {
     return(z_optimal)
 }
 
+
+##################################################SMACOF funcs
 #Creates the transform from the previous point
 make.B <- function(true_dist, low_d) {
     #Create the low D distance matrix
@@ -94,7 +96,7 @@ smacof_forward_mds <- function(high_d, weights, dist.func = euclidean.dist,
                         thresh = thresh, max.iters = max.iters))
 
     #Get lowest cost result
-    costs <- sapply(results, function(i) i$cost)
+    costs <- sapply(results, function(i) i$value)
 
     return(results[[which.min(costs)]])
 }
@@ -129,5 +131,5 @@ single_smacof <- function(true_dist, dist.func = euclidean.dist,
         print("Warning: Did not converge")
     }
 
-    return(list(low_d = low_d, cost = err))
+    return(list(par = low_d, value = err))
 }
