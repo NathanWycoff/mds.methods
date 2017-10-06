@@ -7,7 +7,7 @@ source('simul_solver.R')
 ##Generate some weights and try to recover them.
 #Some params
 #Create some data
-seed <- 12345
+seed <- 1234
 set.seed(seed)
 p <- 5
 n <- 5
@@ -31,7 +31,7 @@ low_d_result <- forward_mds(high_d, k, init_weights, dist.func, n.inits, seed + 
 init_low_d <- low_d_result$par
 
 #Perturb the weights a little bit, get the projection (this represents after user interaction)
-perturb_weights <- init_weights * rgamma(p,100,100)
+perturb_weights <- init_weights * rgamma(p,50,50)
 perturb_weights <- perturb_weights / sum(perturb_weights)
 low_d_result <- forward_mds(high_d, k, perturb_weights, dist.func, n.inits, seed + 1)
 perturb_low_d <- low_d_result$par
@@ -43,21 +43,31 @@ text(init_low_d[,1], init_low_d[,2], 1:n)
 plot(perturb_low_d, main='perturb', lty=0, lwd=0)
 text(perturb_low_d[,1], perturb_low_d[,2], 1:n)
 
-#Confirm that SMACOF approx and exact cost are very close if there hasnt been perturbation
+###############################################
+##Confirm that SMACOF approx and exact cost are very close if there hasnt been perturbation
 low_d_dist <- good.dist(init_low_d, euclidean.dist)
-approx_smacof_inverse_cost(init_weights, low_d_dist, 
-                                 high_d, init_low_d, k, n.inits, dist.func)
+a <- approx_smacof_inverse_cost(init_weights, low_d_dist, 
+                                 high_d, init_low_d, n.inits, dist.func)
 
-smacof_inverse_cost(init_weights, low_d_dist, high_d, k, n.inits, dist.func)
+b <- smacof_inverse_cost(init_weights, low_d_dist, high_d, k, n.inits, dist.func) 
 
-#Try to get the perturbed weights from the old ones.
+print(paste("Approx SMACOF cost with no perturb:", a))
+print(paste("Exact SMACOF cost with no perturb:", b))
+
+################################################
+##If we start with the correct weights and only perturb a little bit, can we recover the new weights?
 forward.n.inits <- 10
-optim_result <- approx_smacof_inverse_step(init_low_d, init_low_d, 
+system.time(optim_result <- approx_smacof_inverse_step(perturb_low_d, init_low_d, 
                                           high_d, init_weights, dist.func, 
-                                          forward.n.inits, seed + 1) 
+                                          forward.n.inits, seed + 1))
 infer_weights <- optim_result$par / sum(optim_result$par)
 
+print("Init Weights:")
+print(init_weights)
+print("Perturb Weights:")
+print(perturb_weights)
+print("My guess:")
+print(infer_weights)
 print(paste('mine',sum(abs(infer_weights - perturb_weights))))
 print(paste('init',sum(abs(init_weights - perturb_weights))))
 print(paste('unif',sum(abs(mean(perturb_weights) - perturb_weights))))
-

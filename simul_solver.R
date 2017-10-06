@@ -25,11 +25,12 @@ make.B <- function(true_dist, low_d) {
 }
 
 approx_smacof_inverse_cost <- function(weights, user_low_d_dist, 
-                                 high_d, prev_low_d, k, n.inits, dist.func) {
+                                 high_d, prev_low_d, n.inits, dist.func) {
     #Get the low d projection induced by the weights, and its distance matrix
     #This next line is the one that needs to change
     #weights_low_d <- forward_mds(high_d, k, weights, dist.func, n.inits, sample(1:1000,1))$par
     #Get the high d distance
+    weights <- sqrt(weights)
     high_d <- high_d %*% diag(weights)
     true_dist <- good.dist(high_d, dist.func)
 
@@ -54,9 +55,10 @@ approx_smacof_inverse_step <- function(user_low_d, prev_low_d, high_d, prev_weig
     p <- dim(high_d)[2]
 
     #Run the solver a couple times
-    print("got here yabitch")
-    print(forward.n.inits)
-    result <- optim(prev_weights, smacof_inverse_cost, method = "L-BFGS-B", user_low_d_dist = user_low_d_dist, high_d = high_d, k = k, n.inits = forward.n.inits, dist.func = dist.func, lower = 0)#, prev_low_d = prev_low_d)
+    result <- optim(prev_weights, approx_smacof_inverse_cost, method = "L-BFGS-B",
+                    user_low_d_dist = user_low_d_dist, high_d = high_d, 
+                    prev_low_d = prev_low_d, n.inits = forward.n.inits, 
+                    dist.func = dist.func, lower = 0.01)
 
     return(result)
 }

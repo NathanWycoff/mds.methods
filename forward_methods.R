@@ -129,7 +129,7 @@ single_smacof <- function(true_dist, dist.func = euclidean.dist,
         low_d <- 1/n * B %*% low_d
 
         #Print current error
-        err <- forward_cost(low_d, true_dist, 2, dist.func)
+        err <- forward_cost(low_d, true_dist, dist.func)
 
         #Get difference in error
         diff <- abs(last_err - err)
