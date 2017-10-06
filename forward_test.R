@@ -5,7 +5,8 @@
 source("forward_methods.R")
 
 #Create some data
-set.seed(123)
+seed <- 123
+set.seed(seed)
 p <- 30
 n <- 6
 high_d <- matrix(rnorm(n*p), ncol = p)
@@ -64,7 +65,7 @@ text(low_2$par[,1], low_2$par[,2], 1:n)
 
 #Check that smacof and optim give the same results with uniform weights
 seed <- 123
-weights = rep(1, p)
+weights = rgamma(p,1,1)
 system.time(low_d_smacof <- smacof_forward_mds(high_d, weights = weights, 
                                 n.inits = 100, dist.func = euclidean.dist))
 system.time(low_d_optim <- forward_mds(high_d, k = 2, weights = weights, 

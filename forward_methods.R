@@ -20,8 +20,8 @@ good.dist <- function(X, dist.func) {
     return(dists)
 }
 
-forward_cost <- function(low_d, high_d_dist, k, dist.func) {
-    low_d <- matrix(low_d, ncol = k)
+forward_cost <- function(low_d, high_d_dist, dist.func) {
+    low_d <- matrix(low_d, ncol = 2)
     low_d_dist <- good.dist(low_d, dist.func)
     diff_mat <- low_d_dist - high_d_dist
 
@@ -32,6 +32,11 @@ forward_cost <- function(low_d, high_d_dist, k, dist.func) {
 }
 
 forward_mds <- function(high_d, k, weights, dist.func, n.inits, seed) {
+    #Set a standard seed if none was chosen
+    if(missing(seed)) {
+        set.seed(123)
+    }
+
     #Cholesky decomp of the diagonal matrix
     weights <- sqrt(weights)
     high_d <- high_d %*% diag(weights)
@@ -42,16 +47,17 @@ forward_mds <- function(high_d, k, weights, dist.func, n.inits, seed) {
     
     #Randomly Init Points
     set.seed(seed)
-    inits <- lapply(1:n.inits, function(x) rnorm(n*k))
+    inits <- lapply(1:n.inits, function(x) rnorm(n*2))
 
     #Get optimal points
-    z_optimals <- lapply(inits, function(init) optim(init, forward_cost, method = "BFGS", high_d_dist = high_d_dist, k = k, dist.func = dist.func, control = list('abstol' = 1e-15)))
+    z_optimals <- lapply(inits, function(init) optim(init, forward_cost, method = "BFGS", high_d_dist = high_d_dist, dist.func = dist.func, control = list('abstol' = 1e-15)))
 
-    optimal <- which.min(lapply(z_optimals, function(z) z$value))
+    costs <- unlist(lapply(z_optimals, function(z) z$value))
+    optimal <- which.min(costs)
     z_optimal <- z_optimals[[optimal]]
 
     #Shape it into a matrix
-    z_optimal$par <- matrix(z_optimal$par, ncol = k)
+    z_optimal$par <- matrix(z_optimal$par, ncol = 2)
 
     return(z_optimal)
 }
@@ -84,15 +90,18 @@ make.B <- function(true_dist, low_d) {
 smacof_forward_mds <- function(high_d, weights, dist.func = euclidean.dist,
                    thresh = 1e-5, max.iters = 1000, n.inits = 10) {
     #Center high D distances
-    high_d <- scale(high_d)
+    weights <- sqrt(weights)
     high_d <- high_d %*% diag(weights)
 
     #Get our high D distance
+    if (sum(weights) < 1e-5) {
+        stop("At least some weights should be nonnegative")
+    }
     true_dist <- good.dist(high_d, dist.func)
 
     #Run a bunch of smacof algos
     results <- lapply(1:n.inits, function(i)
-                    single_smacof(true_dist, dist.func = dist.func,
+                    single_smacof(true_dist = true_dist, dist.func = dist.func,
                         thresh = thresh, max.iters = max.iters))
 
     #Get lowest cost result
