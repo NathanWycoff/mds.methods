@@ -74,12 +74,23 @@ approx_smacof_simul <- function(user_low_d, prev_low_d, high_d,
     weights <- prev_weights
     Z <- prev_low_d
 
+    #User dist (used in cost calculation
+    user_low_d_dist <- good.dist(user_low_d, dist.func)
+
     #Iterate between optimizing weights and low_d coords
     diff <- Inf
     last_err <- Inf
     iter <- 0
+    costs <- c()
+    all_weights <- list()
+    Zs <- list()
     while (diff > thresh && iter < max.iters) {
+        #Calculate the current costs
+        #cost <- inverse_cost(weights, user_low_d_dist, high_d, 2, 100, dist.func)
+        #print(paste("Iter:", iter))
+        #print(paste("True Inverse Cost", cost))
         in_seed <- sample(1:10000, 1)
+        #costs <- c(costs, cost)
 
         #Update weights
         last_weights <- weights
@@ -92,12 +103,18 @@ approx_smacof_simul <- function(user_low_d, prev_low_d, high_d,
         w_high_d <- high_d %*% diag(sqrt(weights))
         true_dist <- good.dist(w_high_d, dist.func)
         Z <- single_smacof(true_dist, dist.func = dist.func, thresh = thresh, 
-                           max.iters = max.iters)$par
+                           max.iters = max.iters, init_low_d = Z)$par
 
         #Update iterative params
         diff <- norm(weights - last_weights, '2')
         iter <- iter + 1
+        all_weights[[iter]] <- weights
+        Zs[[iter]] <- Z
     }
 
-    return(list(weights = weights, Z = Z))
+    if (iter == max.iters) {
+        print("WARN: Reached max iters")
+    }
+
+    return(list(weights = weights, Z = Z, costs = costs, all_weights = all_weights, Zs = Zs))
 }

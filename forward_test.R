@@ -63,7 +63,8 @@ text(low_1$par[,1], low_1$par[,2], 1:n)
 plot(low_2$par, main=low_2$value, lty=0, lwd=0)
 text(low_2$par[,1], low_2$par[,2], 1:n)
 
-#Check that smacof and optim give the same results with uniform weights
+###################################### Comparison
+#Check that smacof and optim give the same results with random weights
 seed <- 123
 weights = rgamma(p,1,1)
 system.time(low_d_smacof <- smacof_forward_mds(high_d, weights = weights, 
@@ -74,6 +75,8 @@ system.time(low_d_optim <- forward_mds(high_d, k = 2, weights = weights,
 #Get and compare distance matrices
 smacof_dist <- as.matrix(dist(low_d_smacof$par))
 optim_dist <- as.matrix(dist(low_d_optim$par))
+smacof_dist <- smacof_dist / sum(smacof_dist)
+optim_dist <- optim_dist / sum(optim_dist)
 print(norm(smacof_dist - optim_dist, '2'))
 
 #Plot the results

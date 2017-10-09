@@ -10,7 +10,7 @@ thresh <- 1e-5
 max.iters <- 1000
 
 #Create some data
-seed <- 123
+seed <- 12345678
 set.seed(seed)
 p <- 5
 n <- 5
@@ -33,9 +33,11 @@ init_weights <- init_weights / sum(init_weights)
 low_d_result <- forward_mds(high_d, k, init_weights, dist.func, n.inits, seed + 1)
 init_low_d <- low_d_result$par
 
-#Perturb the weights a little bit, get the projection (this represents after user interaction)
-perturb_weights <- rep(1,p)#rgamma(p,1,1)#init_weights * rgamma(p,100,10)
-perturb_weights[2] <- 10
+#Different weights
+#perturb_weights <- rep(1,p)
+#perturb_weights[2] <- 10
+set.seed(seed+1)
+perturb_weights <- rgamma(p,1,1)
 perturb_weights <- perturb_weights / sum(perturb_weights)
 low_d_result <- forward_mds(high_d, k, perturb_weights, dist.func, n.inits, seed + 1)
 perturb_low_d <- low_d_result$par
@@ -48,16 +50,16 @@ plot(perturb_low_d, main='perturb', lty=0, lwd=0)
 text(perturb_low_d[,1], perturb_low_d[,2], 1:n)
 
 ###############################################
-##Confirm that SMACOF approx and exact cost are very close if there hasnt been perturbation
-low_d_dist <- good.dist(init_low_d, euclidean.dist)
-a <- approx_smacof_inverse_cost(init_weights, low_d_dist, 
-                                 high_d, init_low_d, n.inits, dist.func)
-
-b <- smacof_inverse_cost(init_weights, low_d_dist, high_d, k, n.inits, dist.func) 
-
-print(paste("Approx SMACOF cost with no perturb:", a))
-print(paste("Exact SMACOF cost with no perturb:", b))
-
+###Confirm that SMACOF approx and exact cost are very close if there hasnt been perturbation
+#low_d_dist <- good.dist(init_low_d, euclidean.dist)
+#a <- approx_smacof_inverse_cost(init_weights, low_d_dist, 
+#                                 high_d, init_low_d, n.inits, dist.func)
+#
+#b <- smacof_inverse_cost(init_weights, low_d_dist, high_d, k, n.inits, dist.func) 
+#
+#print(paste("Approx SMACOF cost with no perturb:", a))
+#print(paste("Exact SMACOF cost with no perturb:", b))
+#
 ################################################
 ##If we start with exactly the correct weights, how far do we move?
 #forward.n.inits <- 10
@@ -99,7 +101,7 @@ print(paste("Exact SMACOF cost with no perturb:", b))
 ## Run the entire inverse algo, trying to recover the weights
 system.time(result <- approx_smacof_simul(perturb_low_d, init_low_d, high_d, 
                                init_weights, dist.func, forward.n.inits, thresh, 
-                               max.iters, seed))
+                               max.iters-1, seed))
 infer_weights <- result$weights
 
 print("Init Weights:")
@@ -124,3 +126,13 @@ print(paste('unif',sum(abs(mean(perturb_weights) - perturb_weights))))
 #                                 high_d, init_low_d, n.inits, dist.func)
 #approx_smacof_inverse_cost(perturb_weights, p_dist, 
 #                                 high_d, init_low_d, n.inits, dist.func)
+
+par(mfrow=c(2,2))
+plot(result$Zs[[999]], main='999', lty=0, lwd=0)
+text(result$Zs[[999]][,1],result$Zs[[999]][,2],  1:n)
+plot(result$Zs[[998]], main='998', lty=0, lwd=0)
+text(result$Zs[[998]][,1],result$Zs[[998]][,2],  1:n)
+plot(perturb_low_d, main='perturb', lty=0, lwd=0)
+text(perturb_low_d[,1], perturb_low_d[,2], 1:n)
+plot(init_low_d, main='init', lty=0, lwd=0)
+text(init_low_d[,1], init_low_d[,2], 1:n)
