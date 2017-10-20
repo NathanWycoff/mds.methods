@@ -15,13 +15,13 @@ attr(high_d, 'scaled:center') <- NULL
 attr(high_d, 'scaled:scale') <- NULL
 
 ######################################## Dumb MDS
-k <- 2
 n.inits <- 10
 dist.func <- euclidean.dist
 
 #Try the algo with two different seeds and see if it converges to the same thing
 weights <- rep(1,p)
-low_d_result <- forward_mds(high_d, k, weights, dist.func, n.inits, seed)
+low_d_result <- forward_mds(high_d, weights, dist.func, n.inits = n.inits, 
+                            seed = seed)
 low_d <- low_d_result$par
 
 par(mfrow=c(2,1))
@@ -30,7 +30,8 @@ text(low_d[,1], low_d[,2], 1:n)
 
 old_low_d <- low_d
 
-low_d_result <- forward_mds(high_d, k, weights, dist.func, n.inits, seed + 1)
+low_d_result <- forward_mds(high_d, weights, dist.func, n.inits = n.inits,
+                           seed =  seed + 1)
 low_d <- low_d_result$par
 
 plot(low_d, lwd = 0, main = paste('MDS baby', 'stress:',low_d_result$value), lty=0)
@@ -40,7 +41,6 @@ text(low_d[,1], low_d[,2], 1:n)
 low_1 <- as.matrix(dist(low_d))
 low_2 <- as.matrix(dist(old_low_d))
 print(norm(low_1 - low_2))
-
 
 ###################################### SMACOF MDS
 #Compare two runs of smacof
@@ -52,9 +52,9 @@ low_2 <- smacof_forward_mds(high_d, weights = weights,
                                 n.inits = 100, dist.func = euclidean.dist)
 
 #Get and compare distance matrices
-smacof_dist <- as.matrix(dist(low_1$par))
-optim_dist <- as.matrix(dist(low_2$par))
-print(norm(smacof_dist - optim_dist, '2'))
+dist_1 <- as.matrix(dist(low_1$par))
+dist_2 <- as.matrix(dist(low_2$par))
+print(norm(dist_1 - dist_2, '2'))
 
 #Plot the results
 par(mfrow=c(2,1))
@@ -69,8 +69,9 @@ seed <- 123
 weights = rgamma(p,1,1)
 system.time(low_d_smacof <- smacof_forward_mds(high_d, weights = weights, 
                                 n.inits = 100, dist.func = euclidean.dist))
-system.time(low_d_optim <- forward_mds(high_d, k = 2, weights = weights, 
-                                dist.func = euclidean.dist, n.inits = 100, seed))
+system.time(low_d_optim <- forward_mds(high_d, weights = weights, 
+                                dist.func = euclidean.dist, n.inits = 100, 
+                                seed = seed))
 
 #Get and compare distance matrices
 smacof_dist <- as.matrix(dist(low_d_smacof$par))

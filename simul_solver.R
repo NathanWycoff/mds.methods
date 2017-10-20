@@ -86,11 +86,11 @@ approx_smacof_simul <- function(user_low_d, prev_low_d, high_d,
     Zs <- list()
     while (diff > thresh && iter < max.iters) {
         #Calculate the current costs
-        #cost <- inverse_cost(weights, user_low_d_dist, high_d, 2, 100, dist.func)
-        #print(paste("Iter:", iter))
-        #print(paste("True Inverse Cost", cost))
+        cost <- inverse_cost(weights, user_low_d_dist, high_d, 2, 100, dist.func)
+        print(paste("Iter:", iter))
+        print(paste("True Inverse Cost", cost))
         in_seed <- sample(1:10000, 1)
-        #costs <- c(costs, cost)
+        costs <- c(costs, cost)
 
         #Update weights
         last_weights <- weights

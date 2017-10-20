@@ -23,7 +23,8 @@ dist.func <- euclidean.dist
 #Generate the weights and induced lowD points
 user_weights <- rgamma(p, 1, 1)*10
 user_weights <- user_weights / sum(user_weights)
-low_d_result <- forward_mds(high_d, k, user_weights, dist.func, n.inits, seed + 1)
+low_d_result <- forward_mds(high_d, user_weights, dist.func, 
+                            n.inits = n.inits, seed = seed + 1)
 user_low_d <- low_d_result$par
 
 #Try to recover those weights based on the low D points
@@ -37,6 +38,12 @@ print(inferred_weights$par - user_weights)
 #Try to recover those weights based on the low D points
 set.seed(seed)
 forward.n.inits <- n.inits#What we used to call n.inits changes
-system.time(inferred_weights <- smacof_inverse_mds(user_low_d, high_d, dist.func, n.inits, forward.n.inits, seed + 1))
+system.time(inferred_weights <- smacof_inverse_mds(user_low_d, 
+                                    high_d, dist.func, n.inits, 
+                                    forward.n.inits, seed + 1))
 
+print(inferred_weights$par - user_weights)
+
+#Now try to do it using the classical method
+system.time(inferred_weights <- old_inverse(user_low_d, high_d, dist.func))
 print(inferred_weights$par - user_weights)

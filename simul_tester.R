@@ -101,7 +101,7 @@ text(perturb_low_d[,1], perturb_low_d[,2], 1:n)
 ## Run the entire inverse algo, trying to recover the weights
 system.time(result <- approx_smacof_simul(perturb_low_d, init_low_d, high_d, 
                                init_weights, dist.func, forward.n.inits, thresh, 
-                               max.iters-1, seed))
+                               100, seed))
 infer_weights <- result$weights
 
 print("Init Weights:")

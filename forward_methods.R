@@ -1,5 +1,8 @@
 #!/usr/bin/Rscript
 #  forward_methods.R Author "Nathan Wycoff <nathanbrwycoff@gmail.com>" Date 09.29.2017
+
+#TODO: Make good.distance accept weights; remove all instances of weighting outside of the function.
+
 #################################################################################
 ##### Functions for forwards
 #An inner product function
@@ -9,7 +12,11 @@ euclidean.dist <- function(x, y) sqrt(sum((x-y)^2))
 #A distance function that:
 #1) Returns a matrix instead of a dist object (I need the diagonals for inner prod distance)
 #2) Allows for custom distance function specification.
-good.dist <- function(X, dist.func) {
+good.dist <- function(X, dist.func, weights = NULL) {
+    if (!is.null(weights)) {
+        weights <- sqrt(weights)
+        X <- X %*% diag(weights)
+    }
     n <- dim(X)[1]
     dists <- matrix(0, ncol = n, nrow = n)
     for (i in 1:n) {
@@ -37,19 +44,16 @@ forward_cost <- function(low_d, high_d_dist, dist.func) {
     return(stress)
 }
 
-forward_mds <- function(high_d, k, weights, dist.func, n.inits, seed) {
-    #Set a standard seed if none was chosen
-    if(missing(seed)) {
-        set.seed(123)
+forward_mds <- function(high_d, weights, dist.func, 
+                   thresh = 1e-5, max.iters = 1000, n.inits = 10, 
+                   seed = NULL) {
+    if(is.null(seed)) {
+        seed <- sample(1:100000, 1)
     }
-
-    #Cholesky decomp of the diagonal matrix
-    weights <- sqrt(weights)
-    high_d <- high_d %*% diag(weights)
 
     #Create the distance matrix
     n <- dim(high_d)[1]
-    high_d_dist <- good.dist(high_d, dist.func)
+    high_d_dist <- good.dist(high_d, dist.func, weights)
     
     #Randomly Init Points
     set.seed(seed)
@@ -97,16 +101,18 @@ make.B <- function(true_dist, low_d) {
 }
 
 smacof_forward_mds <- function(high_d, weights, dist.func = euclidean.dist,
-                   thresh = 1e-5, max.iters = 1000, n.inits = 10) {
-    #Center high D distances
-    weights <- sqrt(weights)
-    high_d <- high_d %*% diag(weights)
+                   thresh = 1e-5, max.iters = 1000, n.inits = 10, seed = NULL) {
+    if (is.null(seed)) {
+        seed <- sample(1:10000, 1)
+    }
+    set.seed(seed)
 
     #Get our high D distance
     if (sum(weights) < 1e-5) {
         stop("At least some weights should be nonnegative")
     }
-    true_dist <- good.dist(high_d, dist.func)
+    true_dist <- good.dist(high_d, dist.func, weights)
+    true_dist <- true_dist / sum(true_dist)
 
     #Run a bunch of smacof algos
     results <- lapply(1:n.inits, function(i)
@@ -150,7 +156,7 @@ single_smacof <- function(true_dist, dist.func = euclidean.dist,
     }
 
     if (iter == max.iters) {
-        print("Warning: Did not converge")
+        warning("SMAMOF algo did not converge")
     }
 
     #Scale the coords
