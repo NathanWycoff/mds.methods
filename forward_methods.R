@@ -8,6 +8,7 @@
 #An inner product function
 inner.prod.dist <- function(x, y) t(x) %*% y
 euclidean.dist <- function(x, y) sqrt(sum((x-y)^2))
+manhattan.dist <- function(x, y) sum(abs(x-y))
 
 #A distance function that:
 #1) Returns a matrix instead of a dist object (I need the diagonals for inner prod distance)
