@@ -1,7 +1,8 @@
 #!/usr/bin/Rscript
 #  forward_methods.R Author "Nathan Wycoff <nathanbrwycoff@gmail.com>" Date 09.29.2017
 
-#TODO: Make good.distance accept weights; remove all instances of weighting outside of the function.
+#TODO: We should separate low D high D distances.
+#TODO: We should use a stopping threshold that is relative as opposed to absolute.
 
 #################################################################################
 ##### Functions for forwards
@@ -10,10 +11,18 @@ inner.prod.dist <- function(x, y) t(x) %*% y
 euclidean.dist <- function(x, y) sqrt(sum((x-y)^2))
 manhattan.dist <- function(x, y) sum(abs(x-y))
 
-#A distance function that:
-#1) Returns a matrix instead of a dist object (I need the diagonals for inner prod distance)
-#2) Allows for custom distance function specification.
+#' A distance function that, unlike the built-in dist:
+#' 1) Returns a matrix instead of a dist object (I need the diagonals for inner prod distance)
+#' 2) Allows for custom distance function specification.
+#' @param X An n by p real valued matrix, rows representing observations, columns representing features. A distance matrix will be computed along its rows.
+#' @param dist.func A function which accepts two arguments: two rows X, and returns a distance (or generalized distance) between them.
+#' @param weights Either a length p nonnegative vector or NULL. If not null, the ith column of X will be scaled by the root of the ith element of weights prior to distance calculation. If not, no scaling will occur.
+#' @return An n by n matrix of distances, element i,j of which being the result of dist.func applied to rows i and j.
+#' @export
+#' @examples 
+#' #None yet, see source file dev/forward_test.R for now.
 good.dist <- function(X, dist.func, weights = NULL) {
+
     if (!is.null(weights)) {
         weights <- sqrt(weights)
         X <- X %*% diag(weights)
@@ -28,6 +37,14 @@ good.dist <- function(X, dist.func, weights = NULL) {
     return(dists)
 }
 
+#' Returns MDS stress for the forward algorithm as defined in equation 8.15 of Borg and Groenen, with all weights (w_{i,j}) equal to 1 (do not confuse these with the weights on dimensions defined in this package).
+#' @param low_d The low_d solution, an n by 2 matrix, the cost of which is to be evaluated.
+#' @param high_d_dist The distance matrix, n by n, of the high dimensional data of which we seek a low D approximation.
+#' @param dist.func The distance function to be used for low dimensional distance computation
+#' @return Nonnegative scalar stress of the configuration
+#' @export
+#' @examples 
+#' #None yet, see source file dev/forward_test.R for now.
 forward_cost <- function(low_d, high_d_dist, dist.func) {
     low_d <- matrix(low_d, ncol = 2)
     low_d_dist <- good.dist(low_d, dist.func)
@@ -45,6 +62,19 @@ forward_cost <- function(low_d, high_d_dist, dist.func) {
     return(stress)
 }
 
+
+#' Do forward MDS by numerically minimizing the stress defined in forward_cost.
+#' @param high_d The high dimensional data of which a low dimensional representation is desired, an n by p matrix where rows represent observations
+#' @param low_d The low_d solution, an n by 2 matrix, the cost of which is to be evaluated.
+#' @param dist.func The distance function to be used for both low and high D distance computation.
+#' @param thresh The threshold below which stress must fall before computation ends. 
+#' @param max.iters The maximum number of iterations passed to optim for stress minimization.
+#' @param n.inits The number of times the optim is run from a random configuration. This can be important, as the cost surface is highly nonconvex.
+#' @param seed Random seed used for initialization
+#' @return List with $par, the optimal configuration as an n by 2 matrix, and $value as the stress of this configuration
+#' @export
+#' @examples 
+#' #None yet, see source file dev/forward_test.R for now.
 forward_mds <- function(high_d, weights, dist.func, 
                    thresh = 1e-5, max.iters = 1000, n.inits = 10, 
                    seed = NULL) {
@@ -60,9 +90,11 @@ forward_mds <- function(high_d, weights, dist.func,
     set.seed(seed)
     inits <- lapply(1:n.inits, function(x) rnorm(n*2))
 
-    #Get optimal points
-    z_optimals <- lapply(inits, function(init) optim(init, forward_cost, method = "BFGS", high_d_dist = high_d_dist, dist.func = dist.func, control = list('abstol' = 1e-15)))
+    #Get candidate solutions
+    z_optimals <- lapply(inits, function(init) optim(init, forward_cost, method = "BFGS", 
+        high_d_dist = high_d_dist, dist.func = dist.func, control = list('abstol' = thresh, 'maxit' = max.iters)))
 
+    #Find the optimal sol among the candidates
     costs <- unlist(lapply(z_optimals, function(z) z$value))
     optimal <- which.min(costs)
     z_optimal <- z_optimals[[optimal]]
@@ -101,6 +133,16 @@ make.B <- function(true_dist, low_d) {
     return(B)
 }
 
+#' Do forward MDS by using the SMACOF algorithm defined on page 191 of Borg and Groenen.
+#' @param high_d The high dimensional data of which a low dimensional representation is desired, an n by p matrix where rows represent observations
+#' @param low_d The low_d solution, an n by 2 matrix, the cost of which is to be evaluated.
+#' @param dist.func The distance function to be used for both low and high D distance computation.
+#' @param thresh The threshold below which stress must fall before computation ends. 
+#' @param max.iters The maximum number of SMACOF iterations (i.e., the maximum number of times we solve the quadratic system described in chapter 8 of Borg and Groenen) per initialization.
+#' @param n.inits The number of times the SMACOF algorithm is run from a random configuration. This can be important, as the cost surface is highly nonconvex.
+#' @param seed Random seed used for initialization
+#' @return List with $par, the optimal configuration as an n by 2 matrix, and $value as the stress of this configuration
+#' #None yet, see source file dev/forward_test.R for now.
 smacof_forward_mds <- function(high_d, weights, dist.func = euclidean.dist,
                    thresh = 1e-5, max.iters = 1000, n.inits = 10, seed = NULL) {
     if (is.null(seed)) {
