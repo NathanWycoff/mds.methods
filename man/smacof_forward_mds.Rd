@@ -24,7 +24,6 @@ smacof_forward_mds(high_d, weights, dist.func = euclidean.dist,
 }
 \value{
 List with $par, the optimal configuration as an n by 2 matrix, and $value as the stress of this configuration
-#None yet, see source file dev/forward_test.R for now.
 }
 \description{
 Do forward MDS by using the SMACOF algorithm defined on page 191 of Borg and Groenen.

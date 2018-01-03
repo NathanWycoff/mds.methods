@@ -10,7 +10,7 @@ forward_mds(high_d, weights, dist.func, thresh = 1e-05, max.iters = 1000,
 \arguments{
 \item{high_d}{The high dimensional data of which a low dimensional representation is desired, an n by p matrix where rows represent observations}
 
-\item{dist.func}{The distance function to be used for both low and high D distance computation.}
+\item{dist.func}{The distance function to be used for high D distance computation; euclidean is always used for low D distance.}
 
 \item{thresh}{The threshold below which stress must fall before computation ends.}
 
