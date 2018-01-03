@@ -40,14 +40,13 @@ good.dist <- function(X, dist.func, weights = NULL) {
 #' Returns MDS stress for the forward algorithm as defined in equation 8.15 of Borg and Groenen, with all weights (w_{i,j}) equal to 1 (do not confuse these with the weights on dimensions defined in this package).
 #' @param low_d The low_d solution, an n by 2 matrix, the cost of which is to be evaluated.
 #' @param high_d_dist The distance matrix, n by n, of the high dimensional data of which we seek a low D approximation.
-#' @param dist.func The distance function to be used for low dimensional distance computation
 #' @return Nonnegative scalar stress of the configuration
 #' @export
 #' @examples 
 #' #None yet, see source file dev/forward_test.R for now.
-forward_cost <- function(low_d, high_d_dist, dist.func) {
+forward_cost <- function(low_d, high_d_dist) {
     low_d <- matrix(low_d, ncol = 2)
-    low_d_dist <- good.dist(low_d, dist.func)
+    low_d_dist <- good.dist(low_d, euclidean.dist)
 
     #Normalize the distance matrices
     high_d_dist <- high_d_dist / sum(high_d_dist)
@@ -66,7 +65,7 @@ forward_cost <- function(low_d, high_d_dist, dist.func) {
 #' Do forward MDS by numerically minimizing the stress defined in forward_cost.
 #' @param high_d The high dimensional data of which a low dimensional representation is desired, an n by p matrix where rows represent observations
 #' @param low_d The low_d solution, an n by 2 matrix, the cost of which is to be evaluated.
-#' @param dist.func The distance function to be used for both low and high D distance computation.
+#' @param dist.func The distance function to be used for high D distance computation; euclidean is always used for low D distance.
 #' @param thresh The threshold below which stress must fall before computation ends. 
 #' @param max.iters The maximum number of iterations passed to optim for stress minimization.
 #' @param n.inits The number of times the optim is run from a random configuration. This can be important, as the cost surface is highly nonconvex.
@@ -92,7 +91,7 @@ forward_mds <- function(high_d, weights, dist.func,
 
     #Get candidate solutions
     z_optimals <- lapply(inits, function(init) optim(init, forward_cost, method = "BFGS", 
-        high_d_dist = high_d_dist, dist.func = dist.func, control = list('abstol' = thresh, 'maxit' = max.iters)))
+        high_d_dist = high_d_dist, control = list('abstol' = thresh, 'maxit' = max.iters)))
 
     #Find the optimal sol among the candidates
     costs <- unlist(lapply(z_optimals, function(z) z$value))
@@ -191,7 +190,7 @@ single_smacof <- function(true_dist, dist.func = euclidean.dist,
         low_d <- B %*% low_d
 
         #Print current error
-        err <- forward_cost(low_d, true_dist, dist.func)
+        err <- forward_cost(low_d, true_dist)
 
         #Get difference in error
         diff <- abs(last_err - err)
@@ -199,14 +198,14 @@ single_smacof <- function(true_dist, dist.func = euclidean.dist,
     }
 
     if (iter == max.iters) {
-        warning("SMAMOF algo did not converge")
+        warning("SMACOF algo did not converge")
     }
 
     #Scale the coords
     low_d <- scale(low_d)
     attr(low_d, 'scaled:center') <- NULL
     attr(low_d, 'scaled:scale') <- NULL
-    err <- forward_cost(low_d, true_dist, dist.func)
+    err <- forward_cost(low_d, true_dist)
 
     return(list(par = low_d, value = err))
 }

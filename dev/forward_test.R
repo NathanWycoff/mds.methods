@@ -2,7 +2,7 @@
 #  smacof_test.R Author "Nathan Wycoff <nathanbrwycoff@gmail.com>" Date 10.03.2017
 
 #Import the source code
-source("forward_methods.R")
+source("../R/forward_methods.R")
 
 #Create some data
 seed <- 123
