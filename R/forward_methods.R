@@ -142,7 +142,6 @@ make.B <- function(true_dist, low_d) {
 #' @param seed Random seed used for initialization
 #' @return List with $par, the optimal configuration as an n by 2 matrix, and $value as the stress of this configuration
 #' @export
-#' #None yet, see source file dev/forward_test.R for now.
 smacof_forward_mds <- function(high_d, weights, dist.func = euclidean.dist,
                    thresh = 1e-5, max.iters = 1000, n.inits = 10, seed = NULL) {
     if (is.null(seed)) {
