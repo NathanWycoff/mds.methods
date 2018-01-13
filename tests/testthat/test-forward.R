@@ -1,6 +1,6 @@
 context("test-forward.R")
 
-source("../../forward_methods.R")
+source("../../R/forward_methods.R")
 
 #Create some data
 seed <- 123
@@ -23,7 +23,7 @@ test_that("Dumb MDS works", {
                                 seed = seed)
     low_d <- low_d_result$par
 
-    par(mfrow=c(2,1))
+    par(mfrow=c(1,2))
     plot(low_d, lwd = 0, main = paste('MDS baby', 'stress:',low_d_result$value), 
          lty=0)
     text(low_d[,1], low_d[,2], 1:n)
