@@ -45,7 +45,7 @@ good.dist <- function(X, dist.func, weights = NULL) {
 #' @export
 #' @examples 
 #' #None yet, see source file dev/forward_test.R for now.
-forward_cost <- function(low_d, high_d_dist, std) {
+forward_cost <- function(low_d, high_d_dist, std = TRUE) {
     low_d <- matrix(low_d, ncol = 2)
     low_d_dist <- good.dist(low_d, euclidean.dist)
 
@@ -217,7 +217,7 @@ single_smacof <- function(true_dist, dist.func = euclidean.dist,
     low_d <- scale(low_d)
     attr(low_d, 'scaled:center') <- NULL
     attr(low_d, 'scaled:scale') <- NULL
-    err <- forward_cost(low_d, true_dist)
+    err <- forward_cost(low_d, true_dist, std = std)
 
     return(list(par = low_d, value = err, iters = iter))
 }
