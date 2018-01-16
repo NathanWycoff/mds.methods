@@ -161,7 +161,7 @@ smacof_forward_mds <- function(high_d, weights, dist.func = euclidean.dist,
 
     #Get our high D distance
     if (sum(weights) < 1e-5) {
-        stop("At least some weights should be actually positive, 
+        stop("At least some weights should be actually positive; 
              their sum seems to be very small")
     }
     true_dist <- good.dist(high_d, dist.func, weights)
@@ -219,5 +219,5 @@ single_smacof <- function(true_dist, dist.func = euclidean.dist,
     attr(low_d, 'scaled:scale') <- NULL
     err <- forward_cost(low_d, true_dist)
 
-    return(list(par = low_d, value = err))
+    return(list(par = low_d, value = err, iters = iter))
 }
