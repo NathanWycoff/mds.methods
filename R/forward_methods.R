@@ -17,21 +17,31 @@ manhattan.dist <- function(x, y) sum(abs(x-y))
 #' @param X An n by p real valued matrix, rows representing observations, columns representing features. A distance matrix will be computed along its rows.
 #' @param dist.func A function which accepts two arguments: two rows X, and returns a distance (or generalized distance) between them.
 #' @param weights Either a length p nonnegative vector or NULL. If not null, the ith column of X will be scaled by the root of the ith element of weights prior to distance calculation. If not, no scaling will occur.
+#' @param symm Is the distance function symmetric? If so, we can skip a bunch of function evaluations. Default is FALSE.
 #' @return An n by n matrix of distances, element i,j of which being the result of dist.func applied to rows i and j.
 #' @export
 #' @examples 
 #' #None yet, see source file dev/forward_test.R for now.
-good.dist <- function(X, dist.func, weights = NULL) {
-
+good.dist <- function(X, dist.func, weights = NULL, symm = FALSE) {
     if (!is.null(weights)) {
         weights <- sqrt(weights)
         X <- X %*% diag(weights)
     }
     n <- dim(X)[1]
     dists <- matrix(0, ncol = n, nrow = n)
-    for (i in 1:n) {
-        for (j in 1:n) {
-            dists[i,j] <- dist.func(X[i,], X[j,])
+
+    #Calculate the actual distances
+    if (symm) {
+        for (i in 1:n) {
+            for (j in 1:i) {
+                dists[i,j] <- dists[j,i] <- dist.func(X[i,], X[j,])
+            }
+        } 
+    } else {
+        for (i in 1:n) {
+            for (j in 1:n) {
+                dists[i,j] <- dist.func(X[i,], X[j,])
+            }
         }
     }
     return(dists)
@@ -47,7 +57,7 @@ good.dist <- function(X, dist.func, weights = NULL) {
 #' #None yet, see source file dev/forward_test.R for now.
 forward_cost <- function(low_d, high_d_dist, std = TRUE) {
     low_d <- matrix(low_d, ncol = 2)
-    low_d_dist <- good.dist(low_d, euclidean.dist)
+    low_d_dist <- good.dist(low_d, euclidean.dist, symm = TRUE)
 
     #Normalize the distance matrices
     high_d_dist <- high_d_dist / sum(high_d_dist)
@@ -77,20 +87,21 @@ forward_cost <- function(low_d, high_d_dist, std = TRUE) {
 #' @param n.inits The number of times the optim is run from a random configuration. This can be important, as the cost surface is highly nonconvex.
 #' @param seed Random seed used for initialization
 #' @param std Boolean, should stress be standardized? This is accomplished by dividing stress by the sum of squared high D distance
+#' @param symm Boolean, is the distance function symmetric? We can save on computation if so.
 #' @return List with $par, the optimal configuration as an n by 2 matrix, and $value as the stress of this configuration
 #' @export
 #' @examples 
 #' #None yet, see source file dev/forward_test.R for now.
 forward_mds <- function(high_d, weights, dist.func, 
                    thresh = 1e-5, max.iters = 1000, n.inits = 10, 
-                   seed = NULL, std = TRUE) {
+                   seed = NULL, std = TRUE, symm = FALSE) {
     if(is.null(seed)) {
         seed <- sample(1:100000, 1)
     }
 
     #Create the distance matrix
     n <- dim(high_d)[1]
-    high_d_dist <- good.dist(high_d, dist.func, weights)
+    high_d_dist <- good.dist(high_d, dist.func, weights, symm)
     
     #Randomly Init Points
     set.seed(seed)
@@ -148,12 +159,13 @@ make.B <- function(true_dist, low_d) {
 #' @param max.iters The maximum number of SMACOF iterations (i.e., the maximum number of times we solve the quadratic system described in chapter 8 of Borg and Groenen) per initialization.
 #' @param n.inits The number of times the SMACOF algorithm is run from a random configuration. This can be important, as the cost surface is highly nonconvex.
 #' @param seed Random seed used for initialization
+#' @param symm Boolean, is the distance function symmetric? We can save on computation if so.
 #' @return List with $par, the optimal configuration as an n by 2 matrix, and $value as the stress of this configuration
 #' @export
 #' #None yet, see source file dev/forward_test.R for now.
 smacof_forward_mds <- function(high_d, weights, dist.func = euclidean.dist,
                    thresh = 1e-5, max.iters = 1000, n.inits = 10, seed = NULL,
-                   std = TRUE) {
+                   std = TRUE, symm = FALSE) {
     if (is.null(seed)) {
         seed <- sample(1:10000, 1)
     }
@@ -164,7 +176,7 @@ smacof_forward_mds <- function(high_d, weights, dist.func = euclidean.dist,
         stop("At least some weights should be actually positive; 
              their sum seems to be very small")
     }
-    true_dist <- good.dist(high_d, dist.func, weights)
+    true_dist <- good.dist(high_d, dist.func, weights, symm)
     true_dist <- true_dist / sum(true_dist)
 
     #Run a bunch of smacof algos

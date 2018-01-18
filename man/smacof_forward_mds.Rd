@@ -5,7 +5,8 @@
 \title{Do forward MDS by using the SMACOF algorithm defined on page 191 of Borg and Groenen.}
 \usage{
 smacof_forward_mds(high_d, weights, dist.func = euclidean.dist,
-  thresh = 1e-05, max.iters = 1000, n.inits = 10, seed = NULL)
+  thresh = 1e-05, max.iters = 1000, n.inits = 10, seed = NULL,
+  std = TRUE, symm = FALSE)
 }
 \arguments{
 \item{high_d}{The high dimensional data of which a low dimensional representation is desired, an n by p matrix where rows represent observations}
@@ -19,6 +20,8 @@ smacof_forward_mds(high_d, weights, dist.func = euclidean.dist,
 \item{n.inits}{The number of times the SMACOF algorithm is run from a random configuration. This can be important, as the cost surface is highly nonconvex.}
 
 \item{seed}{Random seed used for initialization}
+
+\item{symm}{Boolean, is the distance function symmetric? We can save on computation if so.}
 
 \item{low_d}{The low_d solution, an n by 2 matrix, the cost of which is to be evaluated.}
 }

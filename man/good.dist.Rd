@@ -6,7 +6,7 @@
 1) Returns a matrix instead of a dist object (I need the diagonals for inner prod distance)
 2) Allows for custom distance function specification.}
 \usage{
-good.dist(X, dist.func, weights = NULL)
+good.dist(X, dist.func, weights = NULL, symm = FALSE)
 }
 \arguments{
 \item{X}{An n by p real valued matrix, rows representing observations, columns representing features. A distance matrix will be computed along its rows.}
@@ -14,6 +14,8 @@ good.dist(X, dist.func, weights = NULL)
 \item{dist.func}{A function which accepts two arguments: two rows X, and returns a distance (or generalized distance) between them.}
 
 \item{weights}{Either a length p nonnegative vector or NULL. If not null, the ith column of X will be scaled by the root of the ith element of weights prior to distance calculation. If not, no scaling will occur.}
+
+\item{symm}{Is the distance function symmetric? If so, we can skip a bunch of function evaluations. Default is FALSE.}
 }
 \value{
 An n by n matrix of distances, element i,j of which being the result of dist.func applied to rows i and j.

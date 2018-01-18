@@ -4,12 +4,14 @@
 \alias{forward_cost}
 \title{Returns MDS stress for the forward algorithm as defined in equation 8.15 of Borg and Groenen, with all weights (w_{i,j}) equal to 1 (do not confuse these with the weights on dimensions defined in this package).}
 \usage{
-forward_cost(low_d, high_d_dist)
+forward_cost(low_d, high_d_dist, std = TRUE)
 }
 \arguments{
 \item{low_d}{The low_d solution, an n by 2 matrix, the cost of which is to be evaluated.}
 
 \item{high_d_dist}{The distance matrix, n by n, of the high dimensional data of which we seek a low D approximation.}
+
+\item{std}{Boolean, should stress be standardized? This is accomplished by dividing stress by the sum of squared high D distance}
 }
 \value{
 Nonnegative scalar stress of the configuration
