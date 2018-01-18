@@ -181,7 +181,8 @@ smacof_forward_mds <- function(high_d, weights, dist.func = euclidean.dist,
 single_smacof <- function(true_dist, dist.func = euclidean.dist,
                    thresh = 1e-5, max.iters = 1000, init_low_d = NULL,
                    std = TRUE) {
-    #Make a random initial lowD matrix if non is provided
+    #Make a random initial lowD matrix if none is provided
+    n <- nrow(true_dist)
     if (is.null(init_low_d)) {
         low_d <- matrix(rnorm(n*2), ncol = 2)
     } else{
