@@ -53,7 +53,6 @@ good.dist <- function(X, dist.func, weights = NULL, symm = FALSE) {
 #' @return Nonnegative scalar stress of the configuration
 #' @export
 #' @examples 
-#' #None yet, see source file dev/forward_test.R for now.
 forward_cost <- function(low_d, high_d_dist, std = TRUE) {
     low_d <- matrix(low_d, ncol = 2)
     low_d_dist <- good.dist(low_d, euclidean.dist, symm = TRUE)
@@ -90,7 +89,6 @@ forward_cost <- function(low_d, high_d_dist, std = TRUE) {
 #' @return List with $par, the optimal configuration as an n by 2 matrix, and $value as the stress of this configuration
 #' @export
 #' @examples 
-#' #None yet, see source file dev/forward_test.R for now.
 forward_mds <- function(high_d, weights, dist.func, 
                    thresh = 1e-5, max.iters = 1000, n.inits = 10, 
                    seed = NULL, std = TRUE, symm = FALSE) {
@@ -161,7 +159,6 @@ make.B <- function(true_dist, low_d) {
 #' @param symm Boolean, is the distance function symmetric? We can save on computation if so.
 #' @return List with $par, the optimal configuration as an n by 2 matrix, and $value as the stress of this configuration
 #' @export
-#' #None yet, see source file dev/forward_test.R for now.
 smacof_forward_mds <- function(high_d, weights, dist.func = euclidean.dist,
                    thresh = 1e-5, max.iters = 1000, n.inits = 10, seed = NULL,
                    std = TRUE, symm = FALSE) {
