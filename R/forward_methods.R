@@ -21,7 +21,6 @@ manhattan.dist <- function(x, y) sum(abs(x-y))
 #' @return An n by n matrix of distances, element i,j of which being the result of dist.func applied to rows i and j.
 #' @export
 #' @examples 
-#' #None yet, see source file dev/forward_test.R for now.
 good.dist <- function(X, dist.func, weights = NULL, symm = FALSE) {
     if (!is.null(weights)) {
         weights <- sqrt(weights)
