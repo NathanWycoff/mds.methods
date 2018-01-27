@@ -25,6 +25,3 @@ A distance function that, unlike the built-in dist:
 1) Returns a matrix instead of a dist object (I need the diagonals for inner prod distance)
 2) Allows for custom distance function specification.
 }
-\examples{
-#None yet, see source file dev/forward_test.R for now.
-}

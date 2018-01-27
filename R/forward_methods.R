@@ -20,7 +20,6 @@ manhattan.dist <- function(x, y) sum(abs(x-y))
 #' @param symm Is the distance function symmetric? If so, we can skip a bunch of function evaluations. Default is FALSE.
 #' @return An n by n matrix of distances, element i,j of which being the result of dist.func applied to rows i and j.
 #' @export
-#' @examples 
 good.dist <- function(X, dist.func, weights = NULL, symm = FALSE) {
     if (!is.null(weights)) {
         weights <- sqrt(weights)
@@ -52,7 +51,6 @@ good.dist <- function(X, dist.func, weights = NULL, symm = FALSE) {
 #' @param std Boolean, should stress be standardized? This is accomplished by dividing stress by the sum of squared high D distance
 #' @return Nonnegative scalar stress of the configuration
 #' @export
-#' @examples 
 forward_cost <- function(low_d, high_d_dist, std = TRUE) {
     low_d <- matrix(low_d, ncol = 2)
     low_d_dist <- good.dist(low_d, euclidean.dist, symm = TRUE)
@@ -88,7 +86,6 @@ forward_cost <- function(low_d, high_d_dist, std = TRUE) {
 #' @param symm Boolean, is the distance function symmetric? We can save on computation if so.
 #' @return List with $par, the optimal configuration as an n by 2 matrix, and $value as the stress of this configuration
 #' @export
-#' @examples 
 forward_mds <- function(high_d, weights, dist.func, 
                    thresh = 1e-5, max.iters = 1000, n.inits = 10, 
                    seed = NULL, std = TRUE, symm = FALSE) {

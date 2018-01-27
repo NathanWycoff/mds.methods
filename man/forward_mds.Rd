@@ -32,6 +32,3 @@ List with $par, the optimal configuration as an n by 2 matrix, and $value as the
 \description{
 Do forward MDS by numerically minimizing the stress defined in forward_cost.
 }
-\examples{
-#None yet, see source file dev/forward_test.R for now.
-}

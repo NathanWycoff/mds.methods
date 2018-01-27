@@ -19,6 +19,3 @@ Nonnegative scalar stress of the configuration
 \description{
 Returns MDS stress for the forward algorithm as defined in equation 8.15 of Borg and Groenen, with all weights (w_{i,j}) equal to 1 (do not confuse these with the weights on dimensions defined in this package).
 }
-\examples{
-#None yet, see source file dev/forward_test.R for now.
-}
