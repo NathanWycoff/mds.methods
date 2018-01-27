@@ -7,8 +7,23 @@
 #################################################################################
 ##### Functions for forwards
 #An inner product function
+
+#' Inner product Dissimilarity
+#'
+#' A dissimilarity function that is simply the inner product of the two inputs. Note that this is not a metric.
+#' @export
 inner.prod.dist <- function(x, y) t(x) %*% y
+
+#' Euclidean Dissimilarity
+#'
+#' The canonical dissimilarity function, the euclidean distance metric, also known as l2 distance.
+#' @export
 euclidean.dist <- function(x, y) sqrt(sum((x-y)^2))
+
+#' Manhattan Dissimilarity
+#'
+#' The manhattan, or l1, distance metric.
+#' @export
 manhattan.dist <- function(x, y) sum(abs(x-y))
 
 #' A distance function that, unlike the built-in dist:
