@@ -190,7 +190,7 @@ smacof_forward_mds <- function(high_d, weights, dist.func = euclidean.dist,
     #Run a bunch of smacof algos
     results <- lapply(1:n.inits, function(i)
                     single_smacof(true_dist = true_dist, dist.func = dist.func,
-                        thresh = thresh, max.iters = max.iters))
+                        thresh = thresh, max.iters = max.iters, std = std))
 
     #Get lowest cost result
     costs <- sapply(results, function(i) i$value)
